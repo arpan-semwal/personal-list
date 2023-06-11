@@ -1,58 +1,74 @@
-import React , {useState , useEffect}from 'react';
-import {Link} from "react-router-dom";
-import {toast} from "react-toastify";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
-import "./style.css"
+import './style.css';
+
 const Home = () => {
+  const [data, setData] = useState([]);
 
-  const [data , setData] = useState([]);
-
-  //function is used to fetch data
-  const loadData = async() => { 
-    const response = await axios.get("http://localhost:5000/api/get");
-    setData(response.data);
+  // Function used to fetch data
+  const loadData = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/get');
+      setData(response.data);
+    } catch (error) {
+      console.error('Error while calling the API:', error);
+    }
   };
 
-  useEffect(() => { // on initial load it will fetch all the data
+  useEffect(() => {
+    // On initial load, fetch all the data
     loadData();
   }, []);
 
+  const deleteTask = (id) => {
+    if(window.confirm("are you sure u want to delete the task ? ")){
+      axios.delete(`http://localhost:5000/api/remove/${id}`);
+      toast.success("Task Deleted Successfully");
+      setTimeout(() => loadData() , 500);
+    }
+  }
+
   return (
-    <div style={{marginTop: "150px"}}>
+    <div >
+      <Link to="/addEdit">
+        <button className="btn btn-Task">Add task</button>
+      </Link>
+      
       <table className="styled-table">
         <thead>
           <tr>
-            <th style={{textAlign:"center"}} >No</th>
-            <th style={{textAlign:"center"}} >Task</th>
-            <th style={{textAlign:"center"}} >Priority</th>
+            <th style={{ textAlign: 'center' }}>No</th>
+            <th style={{ textAlign: 'center' }}>Task</th>
+            <th style={{ textAlign: 'center' }}>Priority</th>
+            <th style={{ textAlign: 'center' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item , index) => {
-            return(
+          {data.map((item, index) => {
+            return (
               <tr key={item.id}>
-                <th scope='row'>{index+1}</th>
+                <th scope="row">{index + 1}</th>
                 <td>{item.task}</td>
                 <td>{item.priority}</td>
                 <td>
-                  <link to={'/update/${item.id}'}>
-                    <button className='btn btn-edit'>Edit</button>
-                  </link >
+                  <Link to={`/update/${item.id}`}>
+                    <button className="btn btn-edit">Edit</button>
+                  </Link>
 
-                  <button className="btn btn-delete">Delete</button>
+                  <button className="btn btn-delete" onClick={() => deleteTask(item.id)}>Delete</button>
 
-                  <link to={'/view/${item.id}'}>
-                    <button className='btn btn-edit'>View</button>
-                  </link >
+                  
                 </td>
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
     </div>
-  )
+  );
 };
 
-export default Home
+export default Home;
